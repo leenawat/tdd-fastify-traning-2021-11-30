@@ -9,5 +9,8 @@
         "driver": "mysql",
         "multipleStatements": true
     },
+    "jwt": {
+        "secret": "superscretkey"
+    },
     "sql-file": true
 }

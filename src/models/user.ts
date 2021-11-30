@@ -2,7 +2,7 @@
 import { Knex } from 'knex'
 
 export default class UserModel {
-    
+
     db: Knex
 
     constructor(db: Knex) {
@@ -11,5 +11,8 @@ export default class UserModel {
 
     async save(data: any) {
         return await this.db('users').insert(data)
+    }
+    async findByUsername(username: any): Promise<any> {
+        return await this.db('users').select().where({ username }).first()
     }
 }
