@@ -13,6 +13,9 @@ export default class UserModel {
         return await this.db('users').insert(data)
     }
     async findByUsername(username: any): Promise<any> {
-        return await this.db('users').select().where({ username }).first()
+        return await this.db('users')
+            .select()
+            .where({ username})
+            .first()
     }
 }

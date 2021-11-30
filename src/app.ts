@@ -29,6 +29,10 @@ const app: FastifyPluginAsync<AppOptions> = async (
     options: opts
   })
 
+  fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
+    return data => schema.validate(data, { abortEarly: false })
+  })
+
 }
 
 export default app
