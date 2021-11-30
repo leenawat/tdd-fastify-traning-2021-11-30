@@ -13,7 +13,7 @@ const postUser = async (user = validUser) => {
     return await app.inject({
         url: '/api/users',
         method: 'post',
-        payload: validUser
+        payload: user
     })
 }
 
@@ -43,6 +43,18 @@ describe('user tests', () => {
         await postUser()
         const user = await db('users').first()
         expect(user.password).not.toBe(validUser.password)
+    })
+
+    it('user 2 คนที่มี password เหมือนกัน จะต้องถูกเก็บโดยเข้ารหัสแล้วต้องไม่เหมือนกัน', async () => {
+        await postUser()
+        await postUser({
+            'first_name': 'Leenawat',
+            'last_name': 'Papahom',
+            'username': 'leenawat2',
+            'password': 'P4ssword'
+        })
+        const userList = await db('users').select()
+        expect(userList[0].password).not.toBe(userList[1].password)
     })
 
 })
