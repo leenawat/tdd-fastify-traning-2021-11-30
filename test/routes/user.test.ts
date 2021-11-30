@@ -39,5 +39,11 @@ describe('user tests', () => {
         expect(userList.length).toBe(1)
     })
 
+    it('password ที่เก็บใน database ต้องไม่เป็น plaintext', async () => {
+        await postUser()
+        const user = await db('users').first()
+        expect(user.password).not.toBe(validUser.password)
+    })
+
 })
 

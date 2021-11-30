@@ -22,6 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/jest": "^27.0.3",
+    "bcryptjs": "^2.4.3",
     "config": "^3.3.6",
     "db-migrate-mysql": "^2.2.0",
     "fastify": "^3.0.0",
@@ -36,6 +37,7 @@
     "ts-jest": "^27.0.7"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/config": "0.0.40",
     "@types/knex": "^0.16.1",
     "@types/node": "^15.0.0",
