@@ -37,4 +37,20 @@ describe('user tests', () => {
         expect(JSON.parse(res.payload)).toEqual({ message: 'User created' })
     })
 
+
+    it('save the user to database', async () => {
+        await app.inject({
+            url: '/api/users',
+            method: 'post',
+            payload: {
+                'first_name': 'Leenawat',
+                'last_name': 'Papahom',
+                'username': 'leenawat',
+                'password': 'P4ssword'
+            }
+        })
+        const userList = await db('users').select()
+        expect(userList.length).toBe(1)
+    })
+
 })
