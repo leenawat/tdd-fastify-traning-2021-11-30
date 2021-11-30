@@ -8,7 +8,11 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const userModel = new UserModel(fastify.db)
     const userRoleModel = new UserRoleModel(fastify.db)
 
-    fastify.post('/api/auth/sign-in', async function (request, reply) {
+    fastify.post('/api/auth/sign-in', {
+        schema: {
+            tags: ['auth']
+        }
+    }, async function (request, reply) {
         const data: any = request.body
         const userDb: any = await userModel.findByUsername(data.username)
         if (!userDb) {
@@ -39,6 +43,10 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     // this route can only be called by users who has 'cto' and 'admin' roles
     fastify.get(
         '/api/auth/admin', {
+        schema: {
+            tags: ['auth'],
+            security: [{ bearer: [] }]
+        },
         preValidation: [fastify.authenticate],
         preHandler: [fastify.guard.role(['admin'])]
     }, (req, reply) => {
@@ -47,6 +55,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     fastify.get('/api/auth/me', {
         schema: {
+            tags: ['auth'],
             security: [{ bearer: [] }]
         },
         preValidation: [fastify.authenticate]
@@ -56,6 +65,7 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     fastify.post('/api/auth/sign-up', {
         schema: {
+            tags: ['auth'],
             body: Joi.object({
                 username: Joi.string().alphanum().min(4).max(20).required(),
                 password: Joi.string().alphanum().min(6).max(20).required(),
