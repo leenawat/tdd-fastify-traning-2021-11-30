@@ -17,8 +17,9 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
      fastify.log.info('4 `info`')
      fastify.log.debug('5 `debug`')
      fastify.log.trace('6 `trace`')
+     console.log('This shows errors')
     return { root: true }
   })
 }
 
-export default root;
+export default root
