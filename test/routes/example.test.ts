@@ -1,12 +1,13 @@
-import { test } from 'tap'
 import { build } from '../helper'
+describe('example test', () => {
+  const app = build()
 
-test('example is loaded', async (t) => {
-  const app = await build(t)
+  it('example is loaded', async () => {
+    const res = await app.inject({
+      url: '/example'
+    })
 
-  const res = await app.inject({
-    url: '/example'
+    expect(res.payload).toBe('this is an example')
   })
 
-  t.equal(res.payload, 'this is an example')
 })
