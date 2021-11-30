@@ -9,12 +9,10 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         const data: any = request.body
         const userDb: any = await userModel.findByUsername(data.username)
         console.log({ userDb })
-        console.log({data})
         if (!userDb) {
             reply.code(401).send({ message: 'Incorrect credentials' })
         } else {
             const result = bcrypt.compareSync(data.password, userDb.password)
-            console.log({result})
             if (!result) {
                 reply.code(401).send({ message: 'Incorrect credentials' })
             } else {
@@ -30,6 +28,13 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             }
         }
     })
+
+    fastify.get('/api/auth/me', {
+        preValidation: [fastify.authenticate]
+    }, async function (request, reply) {
+        return request.user
+    })
+
 }
 
 export default auth

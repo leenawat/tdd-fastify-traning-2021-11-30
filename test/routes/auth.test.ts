@@ -40,7 +40,6 @@ describe('Authentication', () => {
     it('returns token when credentials are correct', async () => {
         await postUser()
         const res = await postAuthentication(credentials)
-        console.log({ json: res.json() })
         expect(res.json()).toHaveProperty('token')
     })
 
@@ -48,5 +47,39 @@ describe('Authentication', () => {
         await postUser()
         const res = await postAuthentication({ username: 'user1', password: 'Invalidpassword' })
         expect(res.statusCode).toBe(401)
+    })
+
+    it('return 200 when request /api/auth/me', async () => {
+        await postUser()
+        const resToken = await postAuthentication(credentials)
+        const token = resToken.json().token
+
+        const res = await app.inject({
+            url: '/api/auth/me',
+            method: 'get',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            payload: credentials
+        })
+
+        expect(res.statusCode).toBe(200)
+    })
+
+    it('return current user when request /api/auth/me', async () => {
+        await postUser()
+        const resToken = await postAuthentication(credentials)
+        const token = resToken.json().token
+
+        const res = await app.inject({
+            url: '/api/auth/me',
+            method: 'get',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            payload: credentials
+        })
+
+        expect(res.json()).toHaveProperty('username')
     })
 })
