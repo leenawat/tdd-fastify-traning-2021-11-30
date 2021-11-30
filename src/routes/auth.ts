@@ -34,6 +34,9 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     })
 
     fastify.get('/api/auth/me', {
+        schema: {
+            security: [{ bearer: [] }]
+        },
         preValidation: [fastify.authenticate]
     }, async function (request, reply) {
         return request.user
