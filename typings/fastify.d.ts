@@ -8,8 +8,9 @@ declare module 'fastify' {
     }
     
     interface FastifyInstance {
-        jwt: any
-        authenticate: any
+        jwt: any;
+        authenticate: any;
+        guard: any;
     }
 
     interface FastifySchema {

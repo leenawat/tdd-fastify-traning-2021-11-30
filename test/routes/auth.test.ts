@@ -14,6 +14,9 @@ const addUser = async (user = { ...activeUser }) => {
     user.password = hash
     return await db('users').insert(user)
 }
+const addUserRole = async (userRole: any) => {
+    return await db('user_roles').insert({ user_id: userRole.user_id, roles: userRole.roles })
+}
 
 const postAuthentication = async (credentials: any, options = {}) => {
     return await app.inject({
@@ -27,6 +30,7 @@ const postAuthentication = async (credentials: any, options = {}) => {
 describe('Authentication', () => {
 
     beforeEach(async () => {
+        await db('user_roles').truncate()
         await db('users').truncate()
     })
 
@@ -102,7 +106,6 @@ describe('Authentication', () => {
             method: 'post',
             payload: user
         })
-        console.log(res.json())
         expect(res.json().message).toEqual(expect.stringContaining('"username" is not allowed to be empty'))
     })
 
@@ -114,7 +117,6 @@ describe('Authentication', () => {
             method: 'post',
             payload: user
         })
-        console.log(res.json())
         expect(res.json().message).toEqual(expect.stringContaining('"username" length must be at least 4 characters long'))
     })
 
@@ -125,7 +127,6 @@ describe('Authentication', () => {
             method: 'post',
             payload: {}
         })
-        console.log(res.json())
         expect(res.json().message).toEqual(expect.stringContaining('\"username\" is required'))
         expect(res.json().message).toEqual(expect.stringContaining('\"password\" is required'))
         expect(res.json().message).toEqual(expect.stringContaining('\"first_name\" is required'))
@@ -136,6 +137,39 @@ describe('Authentication', () => {
         await addUser({ ...activeUser, active: false })
         const response = await postAuthentication(credentials)
         expect(response.statusCode).toBe(403)
+    })
+
+    it('returns 403 when access /api/auth/admin without role "admin"', async () => {
+        await addUser()
+        const resToken = await postAuthentication(credentials)
+        const token = resToken.json().token
+
+        const res = await app.inject({
+            url: '/api/auth/admin',
+            method: 'get',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            payload: credentials
+        })
+        expect(res.statusCode).toBe(403)
+    })
+
+    it('returns 200 when access /api/auth/admin with role "admin"', async () => {
+        const user_id = await addUser()
+        await addUserRole({ user_id: user_id, roles: 'admin' })
+        const resToken = await postAuthentication(credentials)
+        const token = resToken.json().token
+
+        const res = await app.inject({
+            url: '/api/auth/admin',
+            method: 'get',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            payload: credentials
+        })
+        expect(res.statusCode).toBe(200)
     })
 
 })

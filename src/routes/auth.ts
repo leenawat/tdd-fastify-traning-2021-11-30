@@ -2,9 +2,11 @@ import { FastifyPluginAsync } from 'fastify'
 import UserModel from '../models/user'
 import bcrypt from 'bcryptjs'
 import Joi from 'joi'
+import UserRoleModel from '../models/user-roles'
 
 const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const userModel = new UserModel(fastify.db)
+    const userRoleModel = new UserRoleModel(fastify.db)
 
     fastify.post('/api/auth/sign-in', async function (request, reply) {
         const data: any = request.body
@@ -20,17 +22,27 @@ const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             if (!result) {
                 reply.code(401).send({ message: 'Incorrect credentials' })
             } else {
+                const roles = await userRoleModel.findByUserId(userDb.user_id)
                 const token = fastify.jwt.sign({
                     username: userDb.username,
                     firstName: userDb.first_name,
                     lastName: userDb.last_name,
-                    roles: ['admin']
+                    roles: roles.map(role => role.roles)
                 }, {
                     expiresIn: '10h'
                 })
                 reply.send({ token })
             }
         }
+    })
+
+    // this route can only be called by users who has 'cto' and 'admin' roles
+    fastify.get(
+        '/api/auth/admin', {
+        preValidation: [fastify.authenticate],
+        preHandler: [fastify.guard.role(['admin'])]
+    }, (req, reply) => {
+        reply.send({ message: 'only admin role can see' })
     })
 
     fastify.get('/api/auth/me', {
