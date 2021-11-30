@@ -7,28 +7,37 @@
     "test": "test"
   },
   "scripts": {
-    "test" :  "jest --runInBand",
-    "test:coverage" :  "jest  --runInBand --coverage",
-    "test:watch" :  "jest --watch --runInBand",
-    "test:watch-verbose": "jest --watch --runInBand --verbose",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
+    "test:coverage": "cross-env NODE_ENV=test jest --runInBand --coverage",
+    "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand",
+    "test:watch-verbose": "cross-env NODE_ENV=test jest --watch --runInBand --verbose",
     "start": "npm run build:ts && fastify start -l info dist/app.js",
     "build:ts": "tsc",
-    "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"tsc -w\" \"fastify start --ignore-watch=.ts$ -w -P dist/app.js\""
+    "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"tsc -w\" \"cross-env NODE_ENV=develop fastify start --ignore-watch=.ts$ -w -P dist/app.js\"",
+    "migration:up": "db-migrate up",
+    "migration:down": "db-migrate down"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/jest": "^27.0.3",
+    "config": "^3.3.6",
+    "db-migrate-mysql": "^2.2.0",
     "fastify": "^3.0.0",
     "fastify-autoload": "^3.3.1",
     "fastify-cli": "^2.13.0",
     "fastify-plugin": "^3.0.0",
     "fastify-sensible": "^3.1.0",
     "jest": "^27.4.0",
+    "knex": "^0.95.14",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
     "ts-jest": "^27.0.7"
   },
   "devDependencies": {
+    "@types/config": "0.0.40",
+    "@types/knex": "^0.16.1",
     "@types/node": "^15.0.0",
     "@types/tap": "^15.0.0",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
