@@ -9,7 +9,7 @@ const validUser = {
     'password': 'P4ssword'
 }
 
-const postUser = async (user = validUser) => {
+const postUser = async (user = { ...validUser }) => {
     return await app.inject({
         url: '/api/users',
         method: 'post',

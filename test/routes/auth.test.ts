@@ -9,7 +9,7 @@ const activeUser = { username: 'user1', password: 'P4ssword', first_name: 'User1
 const credentials = { username: 'user1', password: 'P4ssword' }
 
 
-const postUser = async (user = activeUser) => {
+const postUser = async (user = { ...activeUser }) => {
     const hash = await bcrypt.hash(user.password, 10)
     user.password = hash
     return await db('users').insert(user)
@@ -35,6 +35,13 @@ describe('Authentication', () => {
         await postUser()
         const res = await postAuthentication(credentials)
         expect(res.statusCode).toBe(200)
+    })
+
+    it('returns token when credentials are correct', async () => {
+        await postUser()
+        const res = await postAuthentication(credentials)
+        console.log({ json: res.json() })
+        expect(res.json()).toHaveProperty('token')
     })
 
     it('returns 401 ถ้า password ไม่ถูกต้อง', async () => {
