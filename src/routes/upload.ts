@@ -28,17 +28,25 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
         fileFilter: (req, file, cb) => {
             // กำหนด type
-            if (file.mimetype !== 'image/png') {
+            if (!(file.mimetype == 'image/png' || file.mimetype == 'image/jpeg')) {
                 return cb(new Error('Invalid mimetype!'), false)
             }
             cb(null, true)
         }
     })
+    const fileAmountLimit = 3
     fastify.post('/api/upload', {
         preHandler: upload.single('file')
     }, async function (request, reply) {
         const file = request.file
         reply.send(file)
+    })
+
+    fastify.post('/api/uploads', {
+        preHandler: upload.array('file', fileAmountLimit)
+    }, async function (request, reply) {
+        const files = request.files
+        reply.send(files)
     })
 }
 
