@@ -1,9 +1,9 @@
 import { FastifyPluginAsync } from 'fastify'
 import multer from 'fastify-multer'
 
-// const mime = require('mime-type')
+const mime = require('mime-types')
 // import * as fse from 'fs-extra'
-// import * as fs from 'fs'
+import * as fs from 'fs'
 import * as path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -48,6 +48,28 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         const files = request.files
         reply.send(files)
     })
+
+    fastify.get('/api/file/:filename',
+        async function (request, reply) {
+            const params: any = request.params
+
+            const filename = params.filename
+
+            const filePath = path.join(uploadPath, filename)
+
+            try {
+                 if(fs.existsSync(filePath)){
+                    const _mimetype = mime.lookup(filename)
+                    const fileData = fs.readFileSync(filePath)
+                    reply.type(_mimetype)
+                    reply.send(fileData)
+                 }   else{
+                    reply.code(500).send({ ok: false, error: filename + ' not found!' }) 
+                 }    
+            } catch (error: any) {
+                reply.code(500).send({ ok: false, error: error.message })
+            }
+        })
 }
 
 export default upload
