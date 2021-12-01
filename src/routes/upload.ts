@@ -1,13 +1,16 @@
 import { FastifyPluginAsync } from 'fastify'
 import multer from 'fastify-multer'
+import { File } from 'fastify-multer/lib/interfaces'
 
 const mime = require('mime-types')
 // import * as fse from 'fs-extra'
 import * as fs from 'fs'
 import * as path from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import FileModel from '../models/files'
 
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
+    const fileModel = new FileModel(fastify.db)
     const uploadPath = './upload'
 
     const storage = multer.diskStorage({
@@ -38,15 +41,32 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     fastify.post('/api/upload', {
         preHandler: upload.single('file')
     }, async function (request, reply) {
-        const file = request.file
-        reply.send(file)
+        const file: File = request.file
+        const fileInfo = {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            filesize: file.size,
+            filename: file.filename
+        }
+        const rs: any = await fileModel.save(fileInfo)
+        const fileId = rs[0]
+        reply.send({ fileId })
     })
 
     fastify.post('/api/uploads', {
         preHandler: upload.array('file', fileAmountLimit)
     }, async function (request, reply) {
-        const files = request.files
-        reply.send(files)
+        const files: File[] = request.files
+        for (const file of files) {
+            const fileInfo = {
+                originalname: file.originalname,
+                mimetype: file.mimetype,
+                filesize: file.size,
+                filename: file.filename
+            }
+            await fileModel.save(fileInfo)
+        }
+        reply.send({ ok: true })
     })
 
     fastify.get('/api/file/:filename',
@@ -58,14 +78,14 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             const filePath = path.join(uploadPath, filename)
 
             try {
-                 if(fs.existsSync(filePath)){
+                if (fs.existsSync(filePath)) {
                     const _mimetype = mime.lookup(filename)
                     const fileData = fs.readFileSync(filePath)
                     reply.type(_mimetype)
                     reply.send(fileData)
-                 }   else{
-                    reply.code(500).send({ ok: false, error: filename + ' not found!' }) 
-                 }    
+                } else {
+                    reply.code(500).send({ ok: false, error: filename + ' not found!' })
+                }
             } catch (error: any) {
                 reply.code(500).send({ ok: false, error: error.message })
             }
