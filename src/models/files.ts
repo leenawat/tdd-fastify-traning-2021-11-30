@@ -12,4 +12,8 @@ export default class FileModel {
     async save(file: any) {
         return await this.db('files').insert(file, 'file_id')
     }
+
+    async getInfo(fileId: any) {
+        return await this.db('files').select().where({ file_id: fileId })
+    }
 }

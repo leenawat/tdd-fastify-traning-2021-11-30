@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify'
 import multer from 'fastify-multer'
 import { File } from 'fastify-multer/lib/interfaces'
 
-const mime = require('mime-types')
+// const mime = require('mime-types')
 // import * as fse from 'fs-extra'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -69,25 +69,30 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         reply.send({ ok: true })
     })
 
-    fastify.get('/api/file/:filename',
+    fastify.get('/api/file/:fileId',
         async function (request, reply) {
             const params: any = request.params
-
-            const filename = params.filename
-
-            const filePath = path.join(uploadPath, filename)
-
-            try {
-                if (fs.existsSync(filePath)) {
-                    const _mimetype = mime.lookup(filename)
-                    const fileData = fs.readFileSync(filePath)
-                    reply.type(_mimetype)
-                    reply.send(fileData)
-                } else {
-                    reply.code(500).send({ ok: false, error: filename + ' not found!' })
+            const fileId = params.fileId
+            const rs: any = await fileModel.getInfo(fileId)
+            console.log({ rs , foo: 'bar'})
+            if (rs.length > 0) {
+                const file = rs[0]
+                const filename = file.filename
+                const mimetype = file.mimetype
+                const filePath = path.join(uploadPath, filename)
+                try {
+                    if (fs.existsSync(filePath)) {
+                        const fileData = fs.readFileSync(filePath)
+                        reply.type(mimetype)
+                        reply.send(fileData)
+                    } else {
+                        reply.code(500).send({ ok: false, error: filename + ' not found!' })
+                    }
+                } catch (error: any) {
+                    reply.code(500).send({ ok: false, error: error.message })
                 }
-            } catch (error: any) {
-                reply.code(500).send({ ok: false, error: error.message })
+            } else {
+                reply.code(500).send({ ok: false, error: 'File id not found in database' })
             }
         })
 }
