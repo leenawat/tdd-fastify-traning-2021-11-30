@@ -11,6 +11,11 @@ const app: FastifyPluginAsync<AppOptions> = async (
   opts
 ): Promise<void> => {
   // Place here your custom code!
+  void fastify.register(require('fastify-multer').contentParser)
+
+  fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
+    return data => schema.validate(data, { abortEarly: false })
+  })
 
   // Do not touch the following lines
 
@@ -27,10 +32,6 @@ const app: FastifyPluginAsync<AppOptions> = async (
   void fastify.register(AutoLoad, {
     dir: join(__dirname, 'routes'),
     options: opts
-  })
-
-  fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
-    return data => schema.validate(data, { abortEarly: false })
   })
 
 }

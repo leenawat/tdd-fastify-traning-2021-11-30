@@ -5,6 +5,8 @@ declare module 'fastify' {
     interface FastifyRequest {
         user: any;
         jwtVerify: any;
+        file: any;
+        files: any[];
     }
     
     interface FastifyInstance {
